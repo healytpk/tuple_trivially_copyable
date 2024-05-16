@@ -87,6 +87,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Head_base(const _Head_base&) = default;
       constexpr _Head_base(_Head_base&&) = default;
 
+      constexpr _Head_base &operator=(const _Head_base& ) noexcept requires is_trivially_copy_assignable_v<_Head> = default;
+      constexpr _Head_base &operator=(      _Head_base&&) noexcept requires is_trivially_move_assignable_v<_Head> = default;
+
       template<typename _UHead>
 	constexpr _Head_base(_UHead&& __h)
 	: _M_head_impl(std::forward<_UHead>(__h)) { }
@@ -140,8 +143,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Head_base(const _Head& __h)
       : _Head(__h) { }
 
-      constexpr _Head_base(const _Head_base&) = default;
-      constexpr _Head_base(_Head_base&&) = default;
+      constexpr _Head_base(const _Head_base& ) requires (!is_trivially_copy_constructible_v<_Head>) = default;
+      constexpr _Head_base(      _Head_base&&) requires (!is_trivially_move_constructible_v<_Head>) = default;
+
+      constexpr _Head_base(const _Head_base& ) noexcept requires is_trivially_copy_constructible_v<_Head> = default;
+      constexpr _Head_base(      _Head_base&&) noexcept requires is_trivially_move_constructible_v<_Head> = default;
+
+      constexpr _Head_base &operator=(const _Head_base& ) requires is_trivially_copy_assignable_v<_Head> = default;
+      constexpr _Head_base &operator=(      _Head_base&&) requires is_trivially_move_assignable_v<_Head> = default;
 
       template<typename _UHead>
         constexpr _Head_base(_UHead&& __h)
@@ -196,6 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Head_base(const _Head_base&) = default;
       constexpr _Head_base(_Head_base&&) = default;
 
+      constexpr _Head_base &operator=(const _Head_base& ) noexcept requires is_trivially_copy_assignable_v<_Head> = default;
+      constexpr _Head_base &operator=(      _Head_base&&) noexcept requires is_trivially_move_assignable_v<_Head> = default;
+    
       template<typename _UHead>
         constexpr _Head_base(_UHead&& __h)
 	: _M_head_impl(std::forward<_UHead>(__h)) { }
@@ -300,6 +312,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tuple_impl& operator=(const _Tuple_impl&) = delete;
 
       _Tuple_impl(_Tuple_impl&&) = default;
+
+      constexpr _Tuple_impl &operator=(const _Tuple_impl& ) noexcept requires is_trivially_copy_assignable_v<_Head> && (is_trivially_copy_assignable_v<_Tail> && ...) = default;
+      constexpr _Tuple_impl &operator=(      _Tuple_impl&&) noexcept requires is_trivially_move_assignable_v<_Head> && (is_trivially_move_assignable_v<_Tail> && ...) = default;
 
       template<typename... _UElements>
 	constexpr
@@ -521,14 +536,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tuple_impl& operator=(const _Tuple_impl&) = delete;
 
 #if _GLIBCXX_INLINE_VERSION
-      _Tuple_impl(_Tuple_impl&&) = default;
+      constexpr _Tuple_impl(_Tuple_impl&&) = default;
 #else
+      constexpr _Tuple_impl(_Tuple_impl&&) noexcept requires is_trivially_move_constructible_v<_Head> = default;
       constexpr
       _Tuple_impl(_Tuple_impl&& __in)
-      noexcept(is_nothrow_move_constructible<_Head>::value)
+      noexcept(is_nothrow_move_constructible<_Head>::value) requires (!is_trivially_move_constructible_v<_Head>)
       : _Base(static_cast<_Base&&>(__in))
       { }
 #endif
+
+      constexpr _Tuple_impl &operator=(const _Tuple_impl& ) noexcept requires is_trivially_copy_assignable_v<_Head> = default;
+      constexpr _Tuple_impl &operator=(      _Tuple_impl&&) noexcept requires is_trivially_move_assignable_v<_Head> = default;
 
       template<typename _UHead>
 	constexpr
@@ -1089,6 +1108,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // tuple assignment
 
+	  constexpr tuple &operator=(const tuple& ) noexcept requires (is_trivially_copy_assignable_v<_Elements> && ...) = default;
+	  constexpr tuple &operator=(      tuple&&) noexcept requires (is_trivially_move_assignable_v<_Elements> && ...) = default;
+
       _GLIBCXX20_CONSTEXPR
       tuple&
       operator=(__conditional_t<__assignable<const _Elements&...>(),
@@ -1599,6 +1621,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++23
 
       // Tuple assignment.
+
+      _GLIBCXX20_CONSTEXPR tuple& operator=(const tuple& ) noexcept requires (is_trivially_copy_assignable_v<_T1> && is_trivially_copy_assignable_v<_T2>) = default;
+      _GLIBCXX20_CONSTEXPR tuple& operator=(      tuple&&) noexcept requires (is_trivially_move_assignable_v<_T1> && is_trivially_move_assignable_v<_T2>) = default;
 
       _GLIBCXX20_CONSTEXPR
       tuple&
