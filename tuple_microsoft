@@ -201,7 +201,8 @@ class tuple<> { // empty tuple
 public:
     constexpr tuple() noexcept = default; /* strengthened */
 
-    constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
+    constexpr tuple(const tuple& ) noexcept = default;
+    constexpr tuple(      tuple&&) noexcept = default;
 
     template <class _Alloc>
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc&) noexcept /* strengthened */ {}
@@ -589,7 +590,12 @@ public:
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
-    tuple& operator=(const volatile tuple&) = delete;
+    tuple& operator=(const volatile tuple&) requires (!(is_trivially_copy_assignable_v<_This> && (is_trivially_copy_assignable_v<_Rest> &&...)))= delete;
+    tuple& operator=(const tuple& ) noexcept requires is_trivially_copy_assignable_v<_This> && (is_trivially_copy_assignable_v<_Rest> &&...) = default;
+    tuple& operator=(      tuple&&) noexcept requires is_trivially_move_assignable_v<_This> && (is_trivially_move_assignable_v<_Rest> &&...) = default;
+
+    tuple(const tuple& ) noexcept requires is_trivially_copy_constructible_v<_This> && (is_trivially_copy_constructible_v<_Rest> &&...) = default;
+    tuple(      tuple&&) noexcept requires is_trivially_move_constructible_v<_This> && (is_trivially_move_constructible_v<_Rest> &&...) = default;
 
     template <class _Myself = tuple, class _This2 = _This,
         enable_if_t<conjunction_v<_STD _Is_copy_assignable_no_precondition_check<_This2>,
